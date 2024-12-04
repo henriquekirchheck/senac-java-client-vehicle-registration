@@ -38,8 +38,8 @@ public class Vehicle {
     @Override
     public String toString() {
         return "Veiculo" +
-                "\n\tMarca: " + make +
-                "\n\tModelo: " + model +
-                "\n\tPlaca: " + plate;
+                "\n\tMarca: " + getMake() +
+                "\n\tModelo: " + getModel() +
+                "\n\tPlaca: " + getPlate();
     }
 }

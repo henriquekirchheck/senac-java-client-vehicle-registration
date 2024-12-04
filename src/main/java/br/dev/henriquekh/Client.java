@@ -38,8 +38,8 @@ public class Client {
     @Override
     public String toString() {
         return "Cliente" +
-                "\n\tNome: " + name +
-                "\n\tTelefone: " + phone +
-                "\n\tEmail: " + email ;
+                "\n\tNome: " + getName() +
+                "\n\tTelefone: " + getPhone() +
+                "\n\tEmail: " + getEmail() ;
     }
 }

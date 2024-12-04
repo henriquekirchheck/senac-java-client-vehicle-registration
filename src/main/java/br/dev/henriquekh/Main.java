@@ -1,7 +1,5 @@
 package br.dev.henriquekh;
 
-import jdk.jshell.spi.ExecutionControl;
-
 import java.util.*;
 
 public class Main {
@@ -92,12 +90,12 @@ public class Main {
 
                     Optional<HashMap<UUID, Vehicle>> vehiclesOpt = manager.getVehiclesFromClient(client);
 
-                    vehiclesOpt.ifPresentOrElse((vehicles) -> {
+                    vehiclesOpt.ifPresentOrElse((vehicles) ->
                         vehicles.forEach((uuid, vehicle) -> {
                             System.out.println("UUID: " + uuid);
                             System.out.println(vehicle);
-                        });
-                    }, () -> System.out.println("Cliente nao existe"));
+                        })
+                    , () -> System.out.println("Cliente nao existe"));
                 }
                 case 6 -> {
                     System.out.print("Digite o nome do cliente: ");
