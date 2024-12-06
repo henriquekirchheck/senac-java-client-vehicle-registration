@@ -1,13 +1,15 @@
 package br.dev.henriquekh;
 
+import java.time.LocalDateTime;
 import java.util.*;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 public class Main {
     public static void main(String[] args) {
         Manager manager = new Manager();
         Scanner scanner = new Scanner(System.in);
-        mainLoop:
-        while (true) {
+        mainLoop: while (true) {
             System.out.println("""
                     === Menu ===
                     1. Adicionar Cliente
@@ -19,6 +21,7 @@ public class Main {
                     7. Agendar Vistoria
                     8. Listar Agendamentos do Cliente
                     9. Adicionar Item ao Checklist de Vistoria
+                    10. Listar Itens do Checklist de Vistoria
                     0. Sair
                     """);
             System.out.print("Escolha: ");
@@ -39,17 +42,15 @@ public class Main {
                     manager.addClient(new Client(name, phone, email));
                 }
                 case 2 -> {
-                    Set<Client> clients = manager.getAllClients();
-
-                    for (Client client :
-                            clients) {
+                    for (Client client : manager.getAllClients()) {
                         System.out.println(client);
                     }
                 }
                 case 3 -> {
                     System.out.print("Digite o nome: ");
                     String name = scanner.nextLine();
-                    manager.getClientFromName(name).ifPresentOrElse(manager::removeClient, () -> System.out.println("Cliente com esse nome nao existe"));
+                    manager.getClientFromName(name).ifPresentOrElse(manager::removeClient,
+                            () -> System.out.println("Cliente com esse nome nao existe"));
                 }
                 case 4 -> {
                     System.out.print("Digite o nome do cliente: ");
@@ -72,9 +73,9 @@ public class Main {
                     System.out.print("Digite o placa: ");
                     String plate = scanner.nextLine();
 
-                    Optional<UUID> id = manager.addVehicle(client, new Vehicle(make, model, plate));
+                    UUID id = manager.addVehicle(client, new Vehicle(make, model, plate));
 
-                    id.ifPresentOrElse(System.out::println, () -> System.out.println("Cliente nao existe"));
+                    System.out.println(id);
                 }
                 case 5 -> {
                     System.out.print("Digite o nome do cliente: ");
@@ -88,14 +89,10 @@ public class Main {
 
                     Client client = clientOpt.get();
 
-                    Optional<HashMap<UUID, Vehicle>> vehiclesOpt = manager.getVehiclesFromClient(client);
-
-                    vehiclesOpt.ifPresentOrElse((vehicles) ->
-                        vehicles.forEach((uuid, vehicle) -> {
-                            System.out.println("UUID: " + uuid);
-                            System.out.println(vehicle);
-                        })
-                    , () -> System.out.println("Cliente nao existe"));
+                    for (Pair<UUID, Vehicle> vehicle : manager.getVehiclesFromClient(client)) {
+                        System.out.println("UUID: " + vehicle.getLeft());
+                        System.out.println(vehicle.getRight());
+                    }
                 }
                 case 6 -> {
                     System.out.print("Digite o nome do cliente: ");
@@ -112,15 +109,92 @@ public class Main {
                     System.out.print("Digite o UUID do veiculo: ");
                     String uuid = scanner.nextLine();
 
-                    Optional<Boolean> removedOpt = manager.removeVehicle(client, UUID.fromString(uuid));
+                    boolean removed = manager.removeVehicle(client, UUID.fromString(uuid));
 
-                    removedOpt.ifPresentOrElse((removed) -> {
-                        if (removed) {
-                            System.out.println("Removido com sucesso");
-                        } else {
-                            System.out.println("Veiculo nao existe");
-                        }
-                    }, () -> System.out.println("Cliente nao existe"));
+                    if (removed) {
+                        System.out.println("Removido com sucesso");
+                    } else {
+                        System.out.println("Veiculo nao existe");
+                    }
+                }
+                case 7 -> {
+                    System.out.print("Digite o nome do cliente: ");
+                    String name = scanner.nextLine();
+
+                    Optional<Client> clientOpt = manager.getClientFromName(name);
+                    if (clientOpt.isEmpty()) {
+                        System.out.println("Cliente com esse nome nao existe");
+                        break;
+                    }
+
+                    Client client = clientOpt.get();
+
+                    System.out.print("Digite a data da inspecao (YYYY-MM-DD): ");
+                    String date = scanner.nextLine();
+
+                    System.out.print("Digite a hora da inspecao (HH:MM): ");
+                    String time = scanner.nextLine();
+
+                    System.out.print("Digite o status atual: ");
+                    String status = scanner.nextLine();
+
+                    System.out.print("Digite o UUID do veiculo: ");
+                    String uuid = scanner.nextLine();
+
+                    Inspection inspection = new Inspection(LocalDateTime.parse(date + "T" + time), status,
+                            UUID.fromString(uuid));
+
+                    System.out.println(manager.addInspection(client, inspection));
+                }
+                case 8 -> {
+                    System.out.print("Digite o nome do cliente: ");
+                    String name = scanner.nextLine();
+
+                    Optional<Client> clientOpt = manager.getClientFromName(name);
+                    if (clientOpt.isEmpty()) {
+                        System.out.println("Cliente com esse nome nao existe");
+                        break;
+                    }
+
+                    Client client = clientOpt.get();
+
+                    for (Pair<UUID, Inspection> inspection : manager.getInspectionsFromClient(client)) {
+                        System.out.println("UUID: " + inspection.getLeft());
+                        System.out.println(inspection.getRight());
+                    }
+                }
+                case 9 -> {
+                    System.out.print("Digite o UUID da vistoria: ");
+                    String uuid = scanner.nextLine();
+
+                    Optional<Inspection> inspectionOpt = manager.getInspectionById(UUID.fromString(uuid));
+                    if (inspectionOpt.isEmpty()) {
+                        System.out.println("Vistoria com esse id nao existe");
+                        break;
+                    }
+
+                    Inspection inspection = inspectionOpt.get();
+                    
+                    System.out.print("Digite a descricao do item: ");
+                    String description = scanner.nextLine();
+
+                    manager.addToInspectionChecklist(inspection, new ChecklistItem(false, description));
+                }
+                case 10 -> {
+                    System.out.print("Digite o UUID da vistoria: ");
+                    String uuid = scanner.nextLine();
+
+                    Optional<Inspection> inspectionOpt = manager.getInspectionById(UUID.fromString(uuid));
+                    if (inspectionOpt.isEmpty()) {
+                        System.out.println("Vistoria com esse id nao existe");
+                        break;
+                    }
+
+                    Inspection inspection = inspectionOpt.get();
+
+                    for (ChecklistItem item : manager.getChecklistFromInspection(inspection)){
+                        System.out.println(item);
+                    }
                 }
                 case 0 -> {
                     break mainLoop;
